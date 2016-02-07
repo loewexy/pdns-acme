@@ -1,0 +1,118 @@
+#!/bin/bash
+#
+#Copyright 2016 Lukas Metzger <developer@lukas-metzger.com>.
+#
+#Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+#You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+#Unless required by applicable law or agreed to in writing, software
+#distributed under the License is distributed on an "AS IS" BASIS,
+#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#See the License for the specific language governing permissions and
+#limitations under the License.
+
+
+SD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+CONFIG=""
+SERVER=""
+PDNSCLIENT=""
+
+function deploy_challenge {
+    local DOMAIN="${1}" TOKEN="${3}"
+
+    "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "$TOKEN"
+}
+
+function clean_challenge {
+    local DOMAIN="${1}" TOKEN="${3}"
+
+    "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "none"
+}
+
+function deploy_cert {
+    local DOMAIN="${1}" KEYFILE="${2}" CERTFILE="${3}" CHAINFILE="${4}"
+
+    get_hooks "$DOMAIN" | while read LINE
+    do
+        $LINE
+    done
+}
+
+exit_error() {
+  echo "ERROR: ${1}" >&2
+  exit 1
+}
+
+function resolv_config() {
+    if [ -f "pdns-acme.json" ]
+    then
+        CONFIG="pdns-acme.json"
+    elif [ -f "$SD/pdns-acme.json" ]
+    then
+        CONFIG="$SD/pdns-acme.json"
+    else
+        exit_error "Config file not found."
+    fi
+    
+    if ! jq . "$CONFIG" >/dev/null 2>&1
+    then
+        exit_error "Parsing error in config file."
+    fi
+}
+
+function get_server() {
+    SERVER="$(jq -r .config.server $CONFIG)"
+    if [ "$SERVER" == "null" ]
+    then
+        exit_error "No server supplied"
+    fi
+}
+
+function resolv_pdns_client() {
+    PDNSCLIENT="$(jq -r .config[\"pdns-client\"] $CONFIG)"
+    if [ "$PDNSCLIENT" == "null" ]
+    then
+        if [ -x "pdns-client" ]
+        then
+            PDNSCLIENT="pdns-client"
+        elif  [ -x "$SD/pdns-client" ]
+        then
+            PDNSCLIENT="$SD/pdns-client"
+        else
+            exit_error "PDNS Client not found."
+        fi
+    else
+        if [ -x "$PDNSCLIENT" ]
+        then
+            PDNSCLIENT="$PDNSCLIENT"
+        elif  [ -x "$SD/$PDNSCLIENT" ]
+        then
+            PDNSCLIENT="$SD/$PDNSCLIENT"
+        else
+            exit_error "PDNS Client not found."
+        fi
+    fi
+}
+
+function get_id() {
+    local ID="$(jq -r .domains[\"$1\"].id $CONFIG)"
+    if [ "$ID" == "null" ]
+    then
+        exit_error "No id for domain $1 supplied"
+    fi
+    echo "$ID"
+}
+
+function get_hooks() {
+    jq -r ".domains[\"$1\"].hook | (arrays | .[]), (strings | .)" "$CONFIG"
+}
+
+resolv_config
+get_server
+resolv_pdns_client
+
+HANDLER=$1; shift; $HANDLER $@

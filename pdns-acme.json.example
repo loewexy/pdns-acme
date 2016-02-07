@@ -1,0 +1,22 @@
+{
+    "config": {
+        "server": "https://dns.example.com/",
+        "pdns-client": "../pdns-client/pdns-client"
+    },
+    "domains": {
+        "example.com": {
+            "id": 1,
+            "hook": "echo Restarting service for example.com"
+        },
+        "www.example.com": {
+            "id": 2
+        },
+        "test.example.com": {
+            "id": 3,
+            "hook": [
+                "echo Hook command 1 for test.example.com",
+                "echo Hook command 2 for test.example.com"
+            ]
+        }
+    }
+}
