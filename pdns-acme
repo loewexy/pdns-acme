@@ -20,13 +20,14 @@ SD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 CONFIG=""
 SERVER=""
 PDNSCLIENT=""
+SLEEP=0
 
 function deploy_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
 
     "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "$TOKEN"
 
-    sleep $(jq .config.deploy-wait "$CONFIG")
+    sleep $SLEEP 
 }
 
 function clean_challenge {
@@ -111,6 +112,14 @@ function get_id() {
 
 function get_hooks() {
     jq -r ".domains[\"$1\"].hook | (select(.>=[] and .<{}) | .[]), (select(.==tostring) | .)" $CONFIG
+}
+
+function get_sleep_time() {
+    SLEEP="$(jq -r .config.deploy-wait $CONFIG)"
+    if [ "$SLEEP" == "null" ]
+    then
+        SLEEP=0 
+    fi
 }
 
 resolv_config
