@@ -1,7 +1,8 @@
 {
     "config": {
         "server": "https://dns.example.com/",
-        "pdns-client": "../pdns-client/pdns-client"
+        "pdns-client": "../pdns-client/pdns-client",
+	"deploy-wait": 300
     },
     "domains": {
         "example.com": {

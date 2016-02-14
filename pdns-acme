@@ -25,6 +25,8 @@ function deploy_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
 
     "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "$TOKEN"
+
+    sleep $(jq .config.deploy-wait "$CONFIG")
 }
 
 function clean_challenge {
