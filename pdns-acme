@@ -115,7 +115,7 @@ function get_hooks() {
 }
 
 function get_sleep_time() {
-    SLEEP="$(jq -r .config.deploy-wait $CONFIG)"
+    SLEEP="$(jq -r .config[\"deploy-wait\"] $CONFIG)"
     if [ "$SLEEP" == "null" ]
     then
         SLEEP=0 
