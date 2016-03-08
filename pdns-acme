@@ -125,5 +125,6 @@ function get_sleep_time() {
 resolv_config
 get_server
 resolv_pdns_client
+get_sleep_time
 
 HANDLER=$1; shift; $HANDLER $@
