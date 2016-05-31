@@ -45,6 +45,10 @@ function deploy_cert {
     done
 }
 
+function unchanged_cert {
+    // When the cert does not change, nothing needs to be done.
+}
+
 exit_error() {
   echo "ERROR: ${1}" >&2
   exit 1
@@ -60,7 +64,7 @@ function resolv_config() {
     else
         exit_error "Config file not found."
     fi
-    
+
     if ! jq . "$CONFIG" >/dev/null 2>&1
     then
         exit_error "Parsing error in config file."
@@ -140,5 +144,3 @@ elif [ $HANDLER = deploy_cert ]
 then
     $HANDLER $@
 fi
-
-
