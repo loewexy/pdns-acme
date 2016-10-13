@@ -130,13 +130,13 @@ get_sleep_time
 HANDLER=$1
 shift
 
-if [ $HANDLER = deploy_challenge ]
+if [ "$HANDLER" = deploy_challenge ]
 then
     $HANDLER $@
-elif [ $HANDLER = clean_challenge ]
+elif [ "$HANDLER" = clean_challenge ]
 then
     $HANDLER $@
-elif [ $HANDLER = deploy_cert ]
+elif [ "$HANDLER" = deploy_cert ]
 then
     $HANDLER $@
 fi
