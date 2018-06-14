@@ -1,6 +1,6 @@
 # PDNS Manager ACME
 
-[PDNS Manager](https://pdnsmanager.lmitsystems.de) is a simple yet powerful free administration tool for the
+[PDNS Manager](https://pdnsmanager.org) is a simple yet powerful free administration tool for the
 Powerdns authoritative nameserver. It features an API for changing records.
 
 This is a tool which uses PDNS Manager and [dehydrated](https://github.com/lukas2511/dehydrated)
