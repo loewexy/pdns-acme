@@ -1,22 +1,22 @@
 {
     "config": {
         "server": "https://dns.example.com/",
-        "pdns-client": "../pdns-client/pdns-client",
-	"deploy-wait": 300
+        "deploy-wait": 120
     },
     "domains": {
+        "example.com": 12,
+        "www.example.com": 13,
+        "foo.example.com": 23
+    },
+    "certs": {
         "example.com": {
-            "id": 1,
-            "hook": "echo Restarting service for example.com"
+            "alias": ["www.example.com"],
+            "hook": "echo hook for example.com"
         },
-        "www.example.com": {
-            "id": 2
-        },
-        "test.example.com": {
-            "id": 3,
+        "foo.example.com": {
             "hook": [
-                "echo Hook command 1 for test.example.com",
-                "echo Hook command 2 for test.example.com"
+                "echo first hook for foo.example.com",
+                "echo second hook for foo.example.com"
             ]
         }
     }

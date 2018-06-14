@@ -1,0 +1,6 @@
+[submodule "pdns-client"]
+	path = pdns-client
+	url = https://github.com/loewexy/pdns-client
+[submodule "dehydrated"]
+	path = dehydrated
+	url = https://github.com/lukas2511/dehydrated
