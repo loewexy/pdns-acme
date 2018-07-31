@@ -17,6 +17,7 @@ init() {
 
     cd dehydrated
 
+    touch config
     ./dehydrated --register --accept-terms
 
     cd ..
