@@ -1,22 +1,20 @@
 {
     "config": {
-        "server": "https://dns.example.com/",
-        "pdns-client": "../pdns-client/pdns-client",
-	"deploy-wait": 300
+	    "deploy-wait": 1
     },
     "domains": {
         "example.com": {
-            "id": 1,
-            "hook": "echo Restarting service for example.com"
+            "zone": "example.com",
+            "hook": "echo Restarting service for ${DOMAIN}"
         },
         "www.example.com": {
-            "id": 2
+            "zone": "example.com"
         },
         "test.example.com": {
-            "id": 3,
+            "zone": "example.com",
             "hook": [
-                "echo Hook command 1 for test.example.com",
-                "echo Hook command 2 for test.example.com"
+                "echo Hook command 1 for ${DOMAIN}",
+                "echo Hook command 2 for ${DOMAIN}"
             ]
         }
     }

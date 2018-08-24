@@ -18,22 +18,25 @@
 SD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 CONFIG=""
-SERVER=""
-PDNSCLIENT=""
+PDNSUTIL=""
 SLEEP=0
 
 function deploy_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
+    local ZONE=$(get_zone "$DOMAIN")
+    local HOST=${DOMAIN%"$ZONE"}  
 
-    "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "$TOKEN"
+    "$PDNSUTIL" add-record "$ZONE" "_acme-challenge.$HOST" "TXT" 30 \""$TOKEN\""
 
     sleep $SLEEP 
 }
 
 function clean_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
+    local ZONE=$(get_zone "$DOMAIN")
+    local HOST=${DOMAIN%"$ZONE"}  
 
-    "$PDNSCLIENT" -s "$SERVER" -d "_acme-challenge.$DOMAIN" -i "$(get_id "$DOMAIN")" -c "none"
+    "$PDNSUTIL" delete-rrset "$ZONE" "_acme-challenge.$HOST" "TXT"
 }
 
 function deploy_cert {
@@ -41,11 +44,11 @@ function deploy_cert {
 
     get_hooks "$DOMAIN" | while read LINE
     do
-        $LINE
+        eval $LINE
     done
 }
 
-exit_error() {
+function exit_error() {
   echo "ERROR: ${1}" >&2
   exit 1
 }
@@ -67,47 +70,22 @@ function resolv_config() {
     fi
 }
 
-function get_server() {
-    SERVER="$(jq -r .config.server $CONFIG)"
-    if [ "$SERVER" == "null" ]
-    then
-        exit_error "No server supplied"
-    fi
-}
-
 function resolv_pdns_client() {
-    PDNSCLIENT="$(jq -r .config[\"pdns-client\"] $CONFIG)"
-    if [ "$PDNSCLIENT" == "null" ]
+    if [[ -x "/usr/bin/pdnsutil" ]]
     then
-        if [ -x "pdns-client" ]
-        then
-            PDNSCLIENT="pdns-client"
-        elif  [ -x "$SD/pdns-client" ]
-        then
-            PDNSCLIENT="$SD/pdns-client"
-        else
-            exit_error "PDNS Client not found."
-        fi
+        PDNSUTIL="/usr/bin/pdnsutil"
     else
-        if [ -x "$PDNSCLIENT" ]
-        then
-            PDNSCLIENT="$PDNSCLIENT"
-        elif  [ -x "$SD/$PDNSCLIENT" ]
-        then
-            PDNSCLIENT="$SD/$PDNSCLIENT"
-        else
-            exit_error "PDNS Client not found."
-        fi
+        exit_error "PDNSUtil not found."
     fi
 }
 
-function get_id() {
-    local ID="$(jq -r .domains[\"$1\"].id $CONFIG)"
-    if [ "$ID" == "null" ]
+function get_zone() {
+    local ZONE="$(jq -r .domains[\"$1\"].zone $CONFIG)"
+    if [ "$ZONE" == "null" ]
     then
-        exit_error "No id for domain $1 supplied"
+        exit_error "No zone for domain $1 supplied"
     fi
-    echo "$ID"
+    echo "$ZONE"
 }
 
 function get_hooks() {
@@ -123,7 +101,6 @@ function get_sleep_time() {
 }
 
 resolv_config
-get_server
 resolv_pdns_client
 get_sleep_time
 
