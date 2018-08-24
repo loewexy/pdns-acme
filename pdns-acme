@@ -33,8 +33,10 @@ function deploy_challenge {
 
 function clean_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
+    local ZONE=$(get_zone "$DOMAIN")
+    local HOST=${DOMAIN%"$ZONE"}  
 
-    "$PDNSUTIL" delete-rrset "$(get_zone "$DOMAIN")" "_acme-challenge.$DOMAIN" "TXT"
+    "$PDNSUTIL" delete-rrset "$ZONE" "_acme-challenge.$HOST" "TXT"
 }
 
 function deploy_cert {
