@@ -5,7 +5,7 @@
     "domains": {
         "example.com": {
             "zone": "example.com",
-            "hook": "echo Restarting service for example.com"
+            "hook": "echo Restarting service for ${DOMAIN}"
         },
         "www.example.com": {
             "zone": "example.com"
@@ -13,8 +13,8 @@
         "test.example.com": {
             "zone": "example.com",
             "hook": [
-                "echo Hook command 1 for test.example.com",
-                "echo Hook command 2 for test.example.com"
+                "echo Hook command 1 for ${DOMAIN}",
+                "echo Hook command 2 for ${DOMAIN}"
             ]
         }
     }
