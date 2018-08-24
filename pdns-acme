@@ -67,9 +67,9 @@ function resolv_config() {
 }
 
 function resolv_pdns_client() {
-    if [ -x "pdnsutil" ]
+    if [[ -x "/usr/bin/pdnsutil" ]]
     then
-        PDNSUTIL="pdnsutil"
+        PDNSUTIL="/usr/bin/pdnsutil"
     else
         exit_error "PDNSUtil not found."
     fi
