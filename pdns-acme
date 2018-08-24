@@ -22,7 +22,7 @@ PDNSUTIL=""
 SLEEP=0
 
 function deploy_challenge {
-    local DOMAIN="${2}" TOKEN="${3}"
+    local DOMAIN="${1}" TOKEN="${3}"
 
     "$PDNSUTIL" add-record "$(get_zone "$DOMAIN")" "_acme-challenge.$DOMAIN" "TXT" 30 "$TOKEN"
 
@@ -30,13 +30,13 @@ function deploy_challenge {
 }
 
 function clean_challenge {
-    local DOMAIN="${2}" TOKEN="${3}"
+    local DOMAIN="${1}" TOKEN="${3}"
 
     "$PDNSUTIL" delete-rrset "$(get_zone "$DOMAIN")" "_acme-challenge.$DOMAIN" "TXT"
 }
 
 function deploy_cert {
-    local DOMAIN="${2}" KEYFILE="${2}" CERTFILE="${3}" CHAINFILE="${4}"
+    local DOMAIN="${1}" KEYFILE="${2}" CERTFILE="${3}" CHAINFILE="${4}"
 
     get_hooks "$DOMAIN" | while read LINE
     do
