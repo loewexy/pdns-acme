@@ -24,7 +24,7 @@ SLEEP=0
 function deploy_challenge {
     local DOMAIN="${1}" TOKEN="${3}"
 
-    "$PDNSUTIL" add-record "$(get_zone "$DOMAIN")" "_acme-challenge.$DOMAIN" "TXT" 30 "$TOKEN"
+    "$PDNSUTIL" add-record "$(get_zone "$DOMAIN")" "_acme-challenge.$DOMAIN" "TXT" 30 \""$TOKEN\""
 
     sleep $SLEEP 
 }
@@ -40,7 +40,7 @@ function deploy_cert {
 
     get_hooks "$DOMAIN" | while read LINE
     do
-        $LINE
+        eval $LINE
     done
 }
 
