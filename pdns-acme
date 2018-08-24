@@ -22,7 +22,9 @@ PDNSUTIL=""
 SLEEP=0
 
 function deploy_challenge {
-    local DOMAIN="${1}" TOKEN="${3}" ZONE=$(get_zone "$DOMAIN") HOST=${DOMAIN%"$ZONE"}  
+    local DOMAIN="${1}" TOKEN="${3}"
+    local ZONE=$(get_zone "$DOMAIN")
+    local HOST=${DOMAIN%"$ZONE"}  
 
     "$PDNSUTIL" add-record "$ZONE" "_acme-challenge.$HOST" "TXT" 30 \""$TOKEN\""
 
