@@ -15,10 +15,12 @@ init() {
 
     cd ..
 
+    setup_config
+
     cd dehydrated
 
     touch config
-    ./dehydrated --register --accept-terms
+    ./dehydrated -f ./config --register --accept-terms
 
     cd ..
 }
@@ -45,11 +47,7 @@ check_domain_precence() {
     done
 }
 
-cron() {
-    cat pdns-acme.json | jq -r '.certs | to_entries[] |
-        (.key + (if (.value.alias | length) > 0 then .value.alias | " " + join(" ") else "" end))' \
-    > dehydrated/domains.txt
-
+setup_config() {
     echo 'CERTDIR="${BASEDIR}/../certs"' > dehydrated/config
     echo 'HOOK_CHAIN="yes"' >> dehydrated/config
     echo 'HOOK="${BASEDIR}/../hook"' >> dehydrated/config
@@ -59,9 +57,17 @@ cron() {
     then
         cat dehydrated.config >> dehydrated/config
     fi
+}
+
+cron() {
+    cat pdns-acme.json | jq -r '.certs | to_entries[] |
+        (.key + (if (.value.alias | length) > 0 then .value.alias | " " + join(" ") else "" end))' \
+    > dehydrated/domains.txt
+
+    setup_config
 
     cd dehydrated
-    ./dehydrated -c
+    ./dehydrated -c -f ./config
     cd ..
 }
 
