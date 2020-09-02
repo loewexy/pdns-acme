@@ -30,7 +30,7 @@ clean_challenge() {
         ID=$(cat ../pdns-acme.json | jq -r ".domains[\"${DOMAIN}\"] | if type==\"array\" then .[${i}] else . end")
         SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
 
-        ../pdns-client/pdns-client -s $SERVER -i $ID -c none
+        ../pdns-client/pdns-client -s $SERVER -i $ID -c none${i}
         shift 3
         i=$((i+1))
     done
