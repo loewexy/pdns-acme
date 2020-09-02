@@ -40,7 +40,7 @@ check_domain_precence() {
     cat pdns-acme.json | jq -r '(.certs | to_entries[] | .key),(.certs[] | .alias | arrays | .[])' | while read domain
     do
         res=$(cat pdns-acme.json | jq .domains[\"$domain\"])
-        if [ $res == "null" ]
+        if [ "$res" == "null" ]
         then
             exit_error "No id configured for domain $domain"
         fi
