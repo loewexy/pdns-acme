@@ -1,55 +1,54 @@
 #!/usr/bin/env bash
 
 deploy_challenge() {
-    local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
+    while [ $# -gt 0 ]
+    do
+        local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
 
-    echo " - Deploying challenge for $DOMAIN"
+        echo " - Deploying challenge for $DOMAIN"
 
-    ID=$(cat ../pdns-acme.json | jq -r '.domains["'$DOMAIN'"]')
-    SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
+        ID=$(cat ../pdns-acme.json | jq -r '.domains["'$DOMAIN'"]')
+        SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
 
-    ../pdns-client/pdns-client -s $SERVER -i $ID -c $TOKEN_VALUE
+        ../pdns-client/pdns-client -s $SERVER -i $ID -c $TOKEN_VALUE
+        
+        shift 3
+    done
+    sleep $(cat ../pdns-acme.json | jq -r '.config."deploy-wait"')
 }
 
 clean_challenge() {
-    local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
+    while [ $# -gt 0 ]
+    do
+        local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
 
-    echo " - Cleaning challenge for $DOMAIN"
+        echo " - Cleaning challenge for $DOMAIN"
 
-    ID=$(cat ../pdns-acme.json | jq -r '.domains["'$DOMAIN'"]')
-    SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
+        ID=$(cat ../pdns-acme.json | jq -r '.domains["'$DOMAIN'"]')
+        SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
 
-    ../pdns-client/pdns-client -s $SERVER -i $ID -c none
+        ../pdns-client/pdns-client -s $SERVER -i $ID -c none
+        shift 3
+    done
 }
 
 deploy_cert() {
-    local DOMAIN="${1}" KEYFILE="${2}" CERTFILE="${3}" FULLCHAINFILE="${4}" CHAINFILE="${5}" TIMESTAMP="${6}"
-
-    echo " - Deploying cert $DOMAIN"
-
-    cat ../pdns-acme.json | jq -r '.certs["'$DOMAIN'"].hook | (arrays | .[]),(strings)' | while read command
+    while [ $# -gt 0 ]
     do
-        $command
+        local DOMAIN="${1}" KEYFILE="${2}" CERTFILE="${3}" FULLCHAINFILE="${4}" CHAINFILE="${5}" TIMESTAMP="${6}"
+
+        echo " - Deploying cert $DOMAIN"
+
+        cat ../pdns-acme.json | jq -r '.certs["'$DOMAIN'"].hook | (arrays | .[]),(strings)' | while read command
+        do
+            $command
+        done
+        shift 6
     done
 
 }
 
 HANDLER="$1"; shift
 if [[ "${HANDLER}" =~ ^(deploy_challenge|clean_challenge|deploy_cert)$ ]]; then
-    while [ $# -gt 0 ]
-    do
-        "$HANDLER" "$@"
-
-        if [ $HANDLER == "deploy_challenge" ]
-        then
-            sleep $(cat ../pdns-acme.json | jq -r '.config."deploy-wait"')
-            shift 3
-        elif [ $HANDLER == "clean_challenge" ]
-        then
-            shift 3
-        elif [ $HANDLER == "deploy_cert" ]
-        then
-            shift 6
-        fi
-    done
+    "$HANDLER" "$@"
 fi
