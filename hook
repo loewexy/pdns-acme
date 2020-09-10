@@ -1,38 +1,51 @@
 #!/usr/bin/env bash
 
 deploy_challenge() {
-    i=0
+    local PROCESSED="@"
     while [ $# -gt 0 ]
     do
         local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
 
         echo " - Deploying challenge for $DOMAIN"
 
-        ID=$(cat ../pdns-acme.json | jq -r ".domains[\"${DOMAIN}\"] | if type==\"array\" then .[${i}] else . end")
+        # if used already we assume this is the wildcard
+        if [ -z "${PROCESSED##*@${DOMAIN}@*}" ]; then
+            ID=$(cat ../pdns-acme.json | jq -r ".domains[\"*.${DOMAIN}\"]")
+        else
+            ID=$(cat ../pdns-acme.json | jq -r ".domains[\"${DOMAIN}\"]")
+        fi
         SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
 
         ../pdns-client/pdns-client -s $SERVER -i $ID -c $TOKEN_VALUE
+        PROCESSED="${PROCESSED}${DOMAIN}@"
         
         shift 3
-        i=$((i+1))
     done
     sleep $(cat ../pdns-acme.json | jq -r '.config."deploy-wait"')
 }
 
 clean_challenge() {
-    i=0
+    local PROCESSED="@"
     while [ $# -gt 0 ]
     do
         local DOMAIN="${1}" TOKEN_FILENAME="${2}" TOKEN_VALUE="${3}"
 
         echo " - Cleaning challenge for $DOMAIN"
 
-        ID=$(cat ../pdns-acme.json | jq -r ".domains[\"${DOMAIN}\"] | if type==\"array\" then .[${i}] else . end")
+        # if used already we assume this is the wildcard
+        if [ -z "${PROCESSED##*@${DOMAIN}@*}" ]; then
+            ID=$(cat ../pdns-acme.json | jq -r ".domains[\"*.${DOMAIN}\"]")
+            SUFFIX=1
+        else
+            ID=$(cat ../pdns-acme.json | jq -r ".domains[\"${DOMAIN}\"]")
+            SUFFIX=
+        fi
         SERVER=$(cat ../pdns-acme.json | jq -r .config.server)
 
-        ../pdns-client/pdns-client -s $SERVER -i $ID -c none${i}
+        ../pdns-client/pdns-client -s $SERVER -i $ID -c none${SUFFIX}
+        PROCESSED="${PROCESSED}${DOMAIN}@"
+
         shift 3
-        i=$((i+1))
     done
 }
 
